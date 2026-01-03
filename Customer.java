@@ -158,45 +158,47 @@ public class Customer {
 	 */
 	// MUA VE TAU
 	public Ticket buyTicket(Station departure, Station arrival, TicketType ticketType, ScheduleDetail scheduleDetail) {
-		// Kiem tra neu chuyen tau da het cho
-		if (scheduleDetail.isFull()) {
-			System.out.println("Xin loi " + name + ", chuyen tau nay da het cho.");
-			return null;
-		}
+	    // 1. Kiem tra neu chuyen tau da het cho
+	    if (scheduleDetail.isFull()) {
+	        System.out.println("Xin loi " + name + ", chuyen tau nay da het cho.");
+	        return null;
+	    }
 
-		// Tao don hang moi de quan ly viec thanh toan
-		Order order = this.placeOrder();
+	    // 2. Tao don hang moi de quan ly viec thanh toan
+	    Order order = this.placeOrder();
 
-		// Tao ma ve ngau nhien
-		String ticketId = "TKT-" + System.currentTimeMillis();
+	    // 3. Tao ma ve ngau nhien
+	    String ticketId = "TKT-" + System.currentTimeMillis();
 
-		// Tim doan tuyen giua 2 ga (QUAN TRỌNG: phải có routePart để tính giá)
-		RoutePart routePart = scheduleDetail.getRoute().getRoutePartBetween(departure, arrival);
+	    // 4. Tim doan tuyen giua 2 ga
+	    RoutePart routePart = scheduleDetail.getRoute().getRoutePartBetween(departure, arrival);
 
-		// Neu khong tim thay doan tuyen, tao doan tuyen tam thoi
-		if (routePart == null) {
-			// Tinh khoang cach giua 2 ga
-			double distance = departure.calculateDistanceTo(arrival);
-			int estimatedTime = (int) (distance * 2); // Uoc tinh 2 phut/km
+	    // Neu khong tim thay doan tuyen, tao doan tuyen tam thoi
+	    if (routePart == null) {
+	        double distance = departure.calculateDistanceTo(arrival);
+	        int estimatedTime = (int) (distance * 2); // Uoc tinh 2 phut/km
+	        routePart = new RoutePart("RP_TEMP_" + System.currentTimeMillis(), departure, arrival, distance,
+	                scheduleDetail.getRoute(), estimatedTime);
+	    }
 
-			// Tao doan tuyen tam thoi
-			routePart = new RoutePart("RP_TEMP_" + System.currentTimeMillis(), departure, arrival, distance,
-					scheduleDetail.getRoute(), estimatedTime);
-		}
-		// Tao doi tuong ve moi
-		Ticket newTicket = new Ticket(ticketId, this, scheduleDetail, departure, arrival, routePart, ticketType);
-		newTicket.setStatus("ACTIVE"); // Trang thai hoat dong ngay
+	    // 5. Tao doi tuong ve moi
+	    Ticket newTicket = new Ticket(ticketId, this, scheduleDetail, departure, arrival, routePart, ticketType);
+	    newTicket.setStatus("ACTIVE"); // Trang thai hoat dong ngay
+	    newTicket.setPaid(true);       // Mac dinh da thanh toan
+	    newTicket.setPurchaseTime(Calendar.getInstance());
+	    newTicket.calculateValidUntil(); // Tinh han su dung dua tren loai ve
 
-		// Cap nhat du lieu he thong
-		order.addTicket(newTicket);
-		this.activeTickets.add(newTicket);
-		this.ticketHistory.add(newTicket);
+	    // 6. Cap nhat du lieu he thong
+	    order.addTicket(newTicket);
+	    this.activeTickets.add(newTicket);
+	    this.ticketHistory.add(newTicket);
 
-		// Giam so ghe trong tren tau
-		scheduleDetail.reserveSeat();
+	    // 7. Giam so ghe trong tren tau
+	    scheduleDetail.reserveSeat();
 
-		System.out.println("Chuc mung " + name + ", ban da mua ve thanh cong ma: " + ticketId);
-		return newTicket;
+	    // 8. Thong bao
+	    System.out.println("Chuc mung " + name + ", ban da mua ve thanh cong ma: " + ticketId);
+	    return newTicket;
 	}
 
 	/**
@@ -523,8 +525,7 @@ public class Customer {
 	        // Lich trinh
 	        Calendar ngayChay = Calendar.getInstance();
 	        ngayChay.add(Calendar.HOUR_OF_DAY, 3);
-	        ScheduleDetail lichTrinh01 = new ScheduleDetail("SD01", ngayChay, 8.0, 9.0, tuyen01, "FORWARD",
-	                null, false, "SCHEDULED", 0, 2, 2, null);
+	        ScheduleDetail lichTrinh01 = new ScheduleDetail("SD01", ngayChay, 8.0, 9.0, tuyen01, "FORWARD", null, false, "SCHEDULED", 0, 10, 10, null);
 
 	        // Loai ve
 	        TicketType veLuot = new TicketType("TT01", "Ve luot", 0.0, 1, "Ve di mot luot");
@@ -571,23 +572,42 @@ public class Customer {
 
 	        // ===== TEST CANCELTICKET =====
 	        System.out.println("==================== TEST HUY VE ====================");
-	        System.out.println("Huy ve null: " + khachThuong.cancelTicket(null));
-	        System.out.println();
+	        khachThuong.getActiveTickets().add(t1);
+	        khachThuong.getTicketHistory().add(t1);
+	     // Mua vé bằng buyTicket để nó nằm trong activeTickets
+	        Ticket veHuy = khachThuong.buyTicket(gaBenThanh, gaSuoiTien, veLuot, lichTrinh01);
+	        if (veHuy != null) {
+	            veHuy.setStatus("ACTIVE");
+	            boolean huy = khachThuong.cancelTicket(veHuy);
+	            System.out.println("Ket qua huy ve: " + huy);
+	        } else {
+	            System.out.println("Khong the tao ve de test huy vi tau het cho");
+	        }
 
-	        System.out.println("Huy ve khong thuoc khach: " + khachThuong.cancelTicket(fakeTicket));
-	        t1.setStatus("USED");
-	        System.out.println();
 
-	        System.out.println("Huy ve da su dung: " + khachThuong.cancelTicket(t1));
-	        t1.setStatus("EXPIRED");
-	        System.out.println();
-	       
-	        System.out.println("Huy ve da het han: " + khachThuong.cancelTicket(t1));
-	        t1.setStatus("CANCELLED");
-	        System.out.println();
-	       
-	        System.out.println("Huy ve da huy truoc do: " + khachThuong.cancelTicket(t1));
-	        System.out.println();
+	      
+	     // Trường hợp hủy vé ACTIVE
+	     System.out.println();
+	     boolean huyActive = khachThuong.cancelTicket(veHuy);
+	     System.out.println("Huy ve ACTIVE: " + huyActive);
+
+	     // Trường hợp hủy vé đã USED
+	     System.out.println();
+	     veHuy.setStatus("USED");
+	     boolean huyUsed = khachThuong.cancelTicket(veHuy);
+	     System.out.println("Huy ve da su dung: " + huyUsed);
+
+	     // Trường hợp hủy vé đã EXPIRED
+	     System.out.println();
+	     veHuy.setStatus("EXPIRED");
+	     boolean huyExpired = khachThuong.cancelTicket(veHuy);
+	     System.out.println("Huy ve da het han: " + huyExpired);
+
+	     // Trường hợp hủy vé đã CANCELLED
+	     System.out.println();
+	     veHuy.setStatus("CANCELLED");
+	     boolean huyCancelled = khachThuong.cancelTicket(veHuy);
+	     System.out.println("Huy ve da huy truoc do: " + huyCancelled);
 
 	        // ===== TEST GETEXPIREDTICKETS =====
 	        System.out.println("==================== TEST LAY DANH SACH VE HET HAN ====================");
