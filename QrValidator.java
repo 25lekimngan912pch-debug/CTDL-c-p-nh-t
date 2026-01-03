@@ -195,11 +195,8 @@ public class QrValidator {
 		doan01.setRoute(tuyen01);
 
 		// ===== LICH TRINH =====
-		Calendar ngayChay = Calendar.getInstance();
-		ngayChay.set(2026, Calendar.JANUARY, 2, 8, 0);
-		ScheduleDetail lichTrinh01 = new ScheduleDetail("SD01", ngayChay, 8.0, 9.0, tuyen01, "FORWARD", null, false,
-				"SCHEDULED", 0, 10, 10, null);
-
+		Calendar ngayChay = Calendar.getInstance(); ngayChay.add(Calendar.HOUR_OF_DAY, 3); 
+		ScheduleDetail lichTrinh01 = new ScheduleDetail("SD01", ngayChay, 8.0, 9.0, tuyen01, "FORWARD", null, false, "SCHEDULED", 0, 10, 10, null);
 		ScheduleDetail lichTrinhHuy = new ScheduleDetail("SD02", Calendar.getInstance(), 10.0, 11.0, tuyen01, "FORWARD",
 				null, true, "CANCELLED", 0, 10, 100, null);
 
@@ -216,14 +213,14 @@ public class QrValidator {
 		Customer khach01 = new Customer("24130350", "Tran Thi Cam Tu", "a@gmail.com", "0901234567");
 
 		// ===== VE =====
-		Calendar hanMoi = Calendar.getInstance();
-		hanMoi.add(Calendar.DATE, 1);
+		
 		Calendar hanCu = Calendar.getInstance();
 		hanCu.add(Calendar.DATE, -1);
 
-		Ticket veHopLe = new Ticket("T01", khach01, lichTrinh01, gaBenThanh, gaSuoiTien, doan01, veLuot);
-		veHopLe.setStatus("ACTIVE");
-		veHopLe.setPaid(true);
+		Calendar hanMoi = Calendar.getInstance(); hanMoi.add(Calendar.DATE, 1); // han su dung sau 1 ngay 
+		Ticket veHopLe = new Ticket("T01", khach01, lichTrinh01, gaBenThanh, gaSuoiTien, doan01, veLuot); 
+		veHopLe.setStatus("ACTIVE"); 
+		veHopLe.setPaid(true); 
 		veHopLe.setValidUntil(hanMoi);
 
 		Ticket veChuaTT = new Ticket("T02", khach01, lichTrinh01, gaBenThanh, gaSuoiTien, doan01, veLuot);
