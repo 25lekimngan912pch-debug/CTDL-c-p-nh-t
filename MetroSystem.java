@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -462,7 +463,6 @@ public class MetroSystem {
 
 	}
 
-	
 	/**
 	 * Tom tat he thong
 	 * 
@@ -472,8 +472,6 @@ public class MetroSystem {
 		return String.format("%s: %d ga, %d tàu, %d tuyến, %d ngày lễ", name, stations.size(), trains.size(),
 				routes.size(), freeRideDays.size());
 	}
-
-	
 
 	/**
 	 * Cap nhat gio hoat dong
@@ -556,22 +554,23 @@ public class MetroSystem {
 
 		return freeRideDays.stream().filter(date -> date.after(now)).sorted().limit(limit).collect(Collectors.toList());
 	}
-	
+
 	public double calculateTicketPrice(Ticket ticket, Calendar date) {
-        if (ticket == null) {
-            return 0.0;
-        }
-        
-        // Kiem tra co phai ngay le mien phi khong
-        if (isFreeRideDay(date)) {
-            String holidayName = getHolidayName(date);
-            System.out.println("Ngay le " + holidayName + " - MIEN PHI ve!");
-            return 0.0;
-        }
-        
-        // Ngay thuong su dung logic tinh gia cua Ticket
-        return ticket.calculatePrice();
-    }
+		if (ticket == null) {
+			return 0.0;
+		}
+
+		// Kiem tra co phai ngay le mien phi khong
+		if (isFreeRideDay(date)) {
+			String holidayName = getHolidayName(date);
+			System.out.println("Ngay le " + holidayName + " - MIEN PHI ve!");
+			return 0.0;
+		}
+
+		// Ngay thuong su dung logic tinh gia cua Ticket
+		return ticket.calculatePrice();
+	}
+
 	@Override
 	public String toString() {
 		return "MetroSystem [id=" + id + ", name=" + name + ", stations=" + stations + ", trains=" + trains
@@ -580,268 +579,194 @@ public class MetroSystem {
 				+ ", routePlanner=" + routePlanner + ", operatingHours=" + operatingHours + ", emergencyContact="
 				+ emergencyContact + ", freeRideDays=" + freeRideDays + ", holidayNames=" + holidayNames + "]";
 	}
+
 	public static void main(String[] args) {
-	    System.out.println("==================== TAO HE THONG METRO TP.HCM ====================");
-        MetroSystem metro = new MetroSystem("METRO_HCM", "Metro TP.HCM");
-        metro.setOperatingHours("5:00 - 23:00");
-        metro.setEmergencyContact("1900-6000");
-        metro.setFreeRideDays(new ArrayList<>());
-        metro.setHolidayNames(new HashMap<>());
-        
-        System.out.println("Ten he thong: " + metro.getName());
-        System.out.println("ID: " + metro.getId());
-        System.out.println();
-        
-        System.out.println("==================== TEST 1: addStation() ====================");
-        Station station1 = new Station("ST01", "Ben Thanh", "Quan 1", 10.7726, 106.6980, true);
-        Station station2 = new Station("ST02", "Nha Hat TP", "Quan 1", 10.7769, 106.7009, false);
-        Station station3 = new Station("ST03", "Ba Son", "Quan 1", 10.7877, 106.7051, false);
-        Station station14 = new Station("ST14", "Suoi Tien", "Thu Duc", 10.8925, 106.8063, true);
-        
-        metro.addStation(station1);
-        metro.addStation(station2);
-        metro.addStation(station3);
-        metro.addStation(station14);
-        System.out.println("Tong so ga: " + metro.getStations().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 2: addTrain() ====================");
-        Train train1 = new Train("T01", "Metro HCM 01", 930);
-        Train train2 = new Train("T02", "Metro HCM 02", 930);
-        
-        metro.addTrain(train1);
-        metro.addTrain(train2);
-        System.out.println("Tong so tau: " + metro.getTrains().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 3: addRoute() ====================");
-        Route route1 = new Route("R01", "Metro so 1: Ben Thanh - Suoi Tien");
-        
-        metro.addRoute(route1);
-        System.out.println("Tong so tuyen: " + metro.getRoutes().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 4: addSchedule() ====================");
-        Calendar today = Calendar.getInstance();
-        ScheduleDaily schedule1 = new ScheduleDaily("SCH-001", today, route1);
-        
-        metro.addSchedule(schedule1);
-        System.out.println("Tong so lich trinh: " + metro.getSchedules().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 5: addBusRoute() ====================");
-        BusRoute bus1 = new BusRoute("BR01", "Tuyen 1", "Ben Thanh - Cho Lon");
-        BusRoute bus93 = new BusRoute("BR93", "Tuyen 93", "Ben Thanh - Suoi Tien");
-        
-        metro.addBusRoute(bus1);
-        metro.addBusRoute(bus93);
-        System.out.println("Tong so tuyen bus: " + metro.getBusRoutes().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 6: addCustomer() ====================");
-        Customer customer1 = new Customer("24130197", "Le Thi Kim Ngan");
-        Customer customer2 = new Customer("24130350", "Tran Thi Cam Tu");
-        
-        metro.addCustomer(customer1);
-        metro.addCustomer(customer2);
-        System.out.println("Tong so khach hang: " + metro.getCustomers().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 7: addTicketType() ====================");
-        TicketType ticketType1 = new TicketType("TT01", "Ve luot", 15000);
-        TicketType ticketType2 = new TicketType("TT02", "Ve ngay", 40000);
-        
-        metro.addTicketType(ticketType1);
-        metro.addTicketType(ticketType2);
-        System.out.println("Tong so loai ve: " + metro.getTicketTypes().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 8: removeStation() ====================");
-        Station stationTemp = new Station("ST99", "Ga Tam", "Quan 1", 10.7726, 106.6980, false);
-        metro.addStation(stationTemp);
-        System.out.println("So ga truoc khi xoa: " + metro.getStations().size());
-        metro.removeStation(stationTemp);
-        System.out.println("So ga sau khi xoa: " + metro.getStations().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 9: removeTrain() ====================");
-        Train trainTemp = new Train("T99", "Tau Tam", 930);
-        metro.addTrain(trainTemp);
-        System.out.println("So tau truoc khi xoa: " + metro.getTrains().size());
-        metro.removeTrain(trainTemp);
-        System.out.println("So tau sau khi xoa: " + metro.getTrains().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 10: removeSchedule() ====================");
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.add(Calendar.DAY_OF_MONTH, 1);
-        ScheduleDaily scheduleTemp = new ScheduleDaily("SCH-999", tomorrow, route1);
-        metro.addSchedule(scheduleTemp);
-        System.out.println("So lich trinh truoc khi xoa: " + metro.getSchedules().size());
-        metro.removeSchedule(scheduleTemp);
-        System.out.println("So lich trinh sau khi xoa: " + metro.getSchedules().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 11: removeBusRoute() ====================");
-        BusRoute busTemp = new BusRoute("BR99", "Tuyen Tam", "A - B");
-        metro.addBusRoute(busTemp);
-        System.out.println("So tuyen bus truoc khi xoa: " + metro.getBusRoutes().size());
-        metro.removeBusRoute(busTemp);
-        System.out.println("So tuyen bus sau khi xoa: " + metro.getBusRoutes().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 12: removeCustomer() ====================");
-        Customer customerTemp = new Customer("C999", "Khach Tam");
-        metro.addCustomer(customerTemp);
-        System.out.println("So khach hang truoc khi xoa: " + metro.getCustomers().size());
-        metro.removeCustomer(customerTemp);
-        System.out.println("So khach hang sau khi xoa: " + metro.getCustomers().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 13: findStationByName() ====================");
-        String[] stationNames = {"ben thanh", "NHA HAT TP", "Ba Son"};
-        for (String name : stationNames) {
-            Station found = metro.findStationByName(name);
-            System.out.println("Tim ga '" + name + "': " + 
-                    (found != null ? "Tim thay - " + found.getName() : "Khong tim thay"));
-        }
-        System.out.println();
-        
-        System.out.println("==================== TEST 14: findStationById() ====================");
-        String[] stationIds = {"ST01", "ST14", "ST99"};
-        for (String id : stationIds) {
-            Station found = metro.findStationById(id);
-            System.out.println("Tim ga ID '" + id + "': " + 
-                    (found != null ? "Tim thay - " + found.getName() : "Khong tim thay"));
-        }
-        System.out.println();
-        
-        System.out.println("==================== TEST 15: findTrainById() ====================");
-        String[] trainIds = {"T01", "T02", "T99"};
-        for (String id : trainIds) {
-            Train found = metro.findTrainById(id);
-            System.out.println("Tim tau ID '" + id + "': " + 
-                    (found != null ? "Tim thay - " + found.getName() : "Khong tim thay"));
-        }
-        System.out.println();
-        
-        System.out.println("==================== TEST 16: findRouteById() ====================");
-        Route foundRoute = metro.findRouteById("R01");
-        System.out.println("Tim tuyen 'R01': " + 
-                (foundRoute != null ? "Tim thay - " + foundRoute.getName() : "Khong tim thay"));
-        System.out.println();
-        
-        System.out.println("==================== TEST 17: findCustomerById() ====================");
-        String[] customerIds = {"24130197", "24130350", "C999"};
-        for (String id : customerIds) {
-            Customer found = metro.findCustomerById(id);
-            System.out.println("Tim khach ID '" + id + "': " + 
-                    (found != null ? "Tim thay - " + found.getName() : "Khong tim thay"));
-        }
-        System.out.println();
-        
-        System.out.println("==================== TEST 18: findScheduleByDate() ====================");
-        ScheduleDaily foundSchedule = metro.findScheduleByDate(today);
-        System.out.println("Tim lich trinh hom nay: " + 
-                (foundSchedule != null ? "Tim thay - " + foundSchedule.getId() : "Khong tim thay"));
-        System.out.println();
-        
-        System.out.println("==================== TEST 19: getNextDepartures() ====================");
-        Calendar now = Calendar.getInstance();
-        List<ScheduleDetail> nextDepartures = metro.getNextDepartures("ST01", now, 3);
-        System.out.println("So chuyen tiep theo tu ga ST01: " + nextDepartures.size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 20: getActiveRoutes() ====================");
-        List<Route> activeRoutes = metro.getActiveRoutes();
-        System.out.println("So tuyen dang hoat dong: " + activeRoutes.size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 21: getSchedulesByRoute() ====================");
-        List<ScheduleDaily> schedulesByRoute = metro.getSchedulesByRoute("R01");
-        System.out.println("So lich trinh cua tuyen R01: " + schedulesByRoute.size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 22: getSchedulesByDateRange() ====================");
-        Calendar startDate = Calendar.getInstance();
-        Calendar endDate = Calendar.getInstance();
-        endDate.add(Calendar.DAY_OF_MONTH, 7);
-        List<ScheduleDaily> schedulesByRange = metro.getSchedulesByDateRange(startDate, endDate);
-        System.out.println("So lich trinh trong 7 ngay toi: " + schedulesByRange.size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 23: calculateTotalRevenue() ====================");
-        double revenue = metro.calculateTotalRevenue();
-        System.out.println("Tong doanh thu: " + revenue + " VND");
-        System.out.println();
-        
-        System.out.println("==================== TEST 24: validateTicket() ====================");
-        Calendar validTime = Calendar.getInstance();
-        boolean isValid = metro.validateTicket("TICKET-001", validTime, "ST01");
-        System.out.println("Ve TICKET-001 hop le? " + isValid);
-        System.out.println();
-        
-        System.out.println("==================== TEST 25: getSystemSummary() ====================");
-        System.out.println(metro.getSystemSummary());
-        System.out.println();
-        
-        System.out.println("==================== TEST 26: updateOperatingHours() ====================");
-        System.out.println("Gio hoat dong cu: " + metro.getOperatingHours());
-        metro.updateOperatingHours("5:30 - 22:30");
-        System.out.println("Gio hoat dong moi: " + metro.getOperatingHours());
-        System.out.println();
-        
-        System.out.println("==================== TEST 27: addFreeRideDay() ====================");
-        Calendar tet = Calendar.getInstance();
-        tet.set(2025, Calendar.JANUARY, 29);
-        metro.addFreeRideDay(tet, "Tet Nguyen Dan");
-        
-        Calendar quocKhanh = Calendar.getInstance();
-        quocKhanh.set(2025, Calendar.SEPTEMBER, 2);
-        metro.addFreeRideDay(quocKhanh, "Quoc Khanh");
-        
-        System.out.println("Tong so ngay le: " + metro.getFreeRideDays().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 28: removeFreeRideDay() ====================");
-        Calendar gioTo = Calendar.getInstance();
-        gioTo.set(2025, Calendar.APRIL, 10);
-        metro.addFreeRideDay(gioTo, "Gio To Hung Vuong");
-        System.out.println("So ngay le truoc khi xoa: " + metro.getFreeRideDays().size());
-        metro.removeFreeRideDay(gioTo);
-        System.out.println("So ngay le sau khi xoa: " + metro.getFreeRideDays().size());
-        System.out.println();
-        
-        System.out.println("==================== TEST 29: isFreeRideDay() ====================");
-        System.out.println("Tet co phai ngay mien phi? " + metro.isFreeRideDay(tet));
-        System.out.println("Quoc Khanh co phai ngay mien phi? " + metro.isFreeRideDay(quocKhanh));
-        System.out.println("Hom nay co phai ngay mien phi? " + metro.isFreeRideDay(today));
-        System.out.println();
-        
-        System.out.println("==================== TEST 30: getHolidayName() ====================");
-        System.out.println("Ten ngay le Tet: " + metro.getHolidayName(tet));
-        System.out.println("Ten ngay le Quoc Khanh: " + metro.getHolidayName(quocKhanh));
-        System.out.println();
-        
-        System.out.println("==================== TEST 31: getAllFreeRideDays() ====================");
-        List<Calendar> allHolidays = metro.getAllFreeRideDays();
-        System.out.println("Danh sach cac ngay le:");
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        for (Calendar holiday : allHolidays) {
-            System.out.println("  - " + sdf.format(holiday.getTime()) + 
-                    " (" + metro.getHolidayName(holiday) + ")");
-        }
-        System.out.println();
-        
-        System.out.println("==================== TEST 32: getUpcomingHolidays() ====================");
-        List<Calendar> upcomingHolidays = metro.getUpcomingHolidays(5);
-        System.out.println("Cac ngay le sap toi (gioi han 5):");
-        for (Calendar holiday : upcomingHolidays) {
-            System.out.println("  - " + sdf.format(holiday.getTime()) + 
-                    " (" + metro.getHolidayName(holiday) + ")");
-        }
-        System.out.println();
-        
-       
+		System.out.println("==================== KHOI TAO HE THONG METRO ====================");
+
+		// ===== KHOI TAO HE THONG =====
+		MetroSystem metro = new MetroSystem("MS01", "Metro TP.HCM");
+		metro.setOperatingHours("5:00 - 23:00");
+		metro.setEmergencyContact("1900-6000");
+		metro.setFreeRideDays(new ArrayList<>());
+		metro.setHolidayNames(new HashMap<>());
+		metro.setRevenueStatistics(new RevenueStatistics("RS01"));
+
+		// ===== GA =====
+		Station gaBenThanh = new Station("ST01", "Ben Thanh", "Quan 1", 10.77, 106.69, true);
+		Station gaSuoiTien = new Station("ST14", "Suoi Tien", "Thu Duc", 10.89, 106.80, true);
+
+		// ===== TUYEN =====
+		Route tuyen01 = new Route("R01", "Ben Thanh - Suoi Tien", new ArrayList<>(), new ArrayList<>(), 19.7, true,
+				"FORWARD");
+		tuyen01.addStation(gaBenThanh);
+		tuyen01.addStation(gaSuoiTien);
+		RoutePart doan01 = new RoutePart("RP01", gaBenThanh, gaSuoiTien, 19.7, tuyen01, 45);
+		tuyen01.addRoutePart(doan01);
+
+		// ===== LICH TRINH =====
+		Calendar ngayChay = Calendar.getInstance();
+		ngayChay.add(Calendar.HOUR_OF_DAY, 2);
+		ScheduleDetail lichTrinh01 = new ScheduleDetail("SD01", ngayChay, 8.0, 9.0, tuyen01, "FORWARD", null, false,
+				"SCHEDULED", 0, 100, 100, null);
+		ScheduleDaily lichNgay = new ScheduleDaily("SCH01", ngayChay, tuyen01);
+		lichNgay.addDetail(lichTrinh01);
+
+		// ===== LOCOMOTIVE & TRAIN =====
+		Calendar baoTriCu = Calendar.getInstance();
+		baoTriCu.set(2025, Calendar.DECEMBER, 1);
+		Calendar baoTriTiep = Calendar.getInstance();
+		baoTriTiep.set(2026, Calendar.JUNE, 1);
+		Locomotive loco1 = new Locomotive("L01", "Metro 01", "OPERATIONAL", 60, 80, 2020, baoTriCu, baoTriTiep);
+
+		LinkedList<Carriage> dsToa = new LinkedList<>();
+		Train tau01 = new Train("T01", "Metro HCM 01", loco1, dsToa, "AVAILABLE", tuyen01, lichTrinh01, 0, gaBenThanh,
+				2020);
+		Carriage toa1 = new Carriage("C01", "STANDARD", 50, 50, "IN_USE", tau01, true, true);
+		Carriage toa2 = new Carriage("C02", "STANDARD", 60, 60, "IN_USE", tau01, true, false);
+		tau01.getCarriageList().add(toa1);
+		tau01.getCarriageList().add(toa2);
+		tau01.updateTotalCapacity();
+
+		// ===== BUS ROUTE =====
+		BusRoute bus01 = new BusRoute("B01", "Tuyen 01", "Ben Thanh - Cho Lon", 12.5, 35, 7000);
+
+		// ===== KHACH HANG & VE =====
+		Customer khach01 = new Customer("C01", "Nguyen Van A");
+		TicketType veLuot = new TicketType("TT01", "Ve luot", 0.0, 1, "Ve di mot luot");
+		Ticket ve01 = new Ticket("TKT01", khach01, lichTrinh01, gaBenThanh, gaSuoiTien, doan01, veLuot);
+		ve01.setStatus("ACTIVE");
+		ve01.setPaid(true);
+		Calendar hanSuDung = Calendar.getInstance();
+		hanSuDung.add(Calendar.DATE, 1);
+		ve01.setValidUntil(hanSuDung);
+		khach01.getActiveTickets().add(ve01);
+
+		System.out.println("Da tao cac doi tuong test\n");
+
+		// ===== TEST ADD =====
+		System.out.println("==================== TEST ADD ====================");
+		metro.addStation(gaBenThanh);
+		metro.addStation(gaSuoiTien);
+		metro.addTrain(tau01);
+		metro.addRoute(tuyen01);
+		metro.addSchedule(lichNgay);
+		metro.addBusRoute(bus01);
+		metro.addCustomer(khach01);
+		metro.addTicketType(veLuot);
+		System.out.println();
+
+		// ===== TEST REMOVE =====
+		System.out.println("==================== TEST REMOVE ====================");
+		metro.removeStation(gaSuoiTien);
+		metro.removeTrain(tau01);
+		// metro.removeRoute(tuyen01);
+		metro.removeSchedule(lichNgay);
+		metro.removeBusRoute(bus01);
+		metro.removeCustomer(khach01);
+		System.out.println();
+
+		// ===== TEST FIND =====
+		System.out.println("==================== TEST FIND ====================");
+		System.out.println("Tim ga Ben Thanh: " + (metro.findStationByName("Ben Thanh") != null));
+		System.out.println("Tim ga ST01: " + (metro.findStationById("ST01") != null));
+		System.out.println("Tim tau T01: " + (metro.findTrainById("T01") != null));
+		System.out.println("Tim tuyen R01: " + (metro.findRouteById("R01") != null));
+		System.out.println("Tim khach C01: " + (metro.findCustomerById("C01") != null));
+		System.out.println("Tim lich trinh hom nay: " + (metro.findScheduleByDate(ngayChay) != null));
+		System.out.println();
+
+		// ===== TEST LICH TRINH =====
+		System.out.println("==================== TEST LICH TRINH ====================");
+		List<ScheduleDetail> nextTrips = metro.getNextDepartures("ST01", Calendar.getInstance(), 3);
+		System.out.println("Chuyen tiep theo tu ST01: " + nextTrips.size());
+
+		List<Route> activeRoutes = metro.getActiveRoutes();
+		System.out.println("Tuyen dang hoat dong: " + activeRoutes.size());
+
+		List<ScheduleDaily> schedulesByRoute = metro.getSchedulesByRoute("R01");
+		System.out.println("Lich trinh theo tuyen R01: " + schedulesByRoute.size());
+
+		Calendar start = Calendar.getInstance();
+		Calendar end = Calendar.getInstance();
+		end.add(Calendar.DAY_OF_MONTH, 7);
+		List<ScheduleDaily> schedulesRange = metro.getSchedulesByDateRange(start, end);
+		System.out.println("Lich trinh trong 7 ngay toi: " + schedulesRange.size());
+		System.out.println();
+
+		// ===== TEST VE & DOANH THU =====
+		System.out.println("==================== TEST VE & DOANH THU ====================");
+		boolean hopLe = metro.validateTicket("TKT01", Calendar.getInstance(), "ST01");
+		System.out.println("Ve TKT01 hop le? " + hopLe);
+		System.out.println("Tong doanh thu: " + metro.calculateTotalRevenue() + " VND");
+		System.out.println();
+
+		// ===== TEST NGAY LE =====
+		System.out.println("==================== TEST NGAY LE ====================");
+		Calendar tet = Calendar.getInstance();
+		tet.set(2026, Calendar.JANUARY, 29);
+		metro.addFreeRideDay(tet, "Tet Nguyen Dan");
+		System.out.println("So ngay le: " + metro.getFreeRideDays().size());
+		System.out.println("Tet co phai ngay le? " + metro.isFreeRideDay(tet));
+		System.out.println("Ten ngay le Tet: " + metro.getHolidayName(tet));
+		metro.removeFreeRideDay(tet);
+		System.out.println("So ngay le sau khi xoa: " + metro.getFreeRideDays().size());
+		System.out.println();
+
+		// ===== TEST TINH GIA VE =====
+		System.out.println("==================== TEST TINH GIA VE ====================");
+		double giaThuong = metro.calculateTicketPrice(ve01, Calendar.getInstance());
+		metro.addFreeRideDay(tet, "Tet Nguyen Dan");
+		double giaTet = metro.calculateTicketPrice(ve01, tet);
+		System.out.println("Gia ve ngay thuong: " + giaThuong);
+		System.out.println("Gia ve ngay Tet: " + giaTet);
+		System.out.println();
+
+		// ===== TEST TOM TAT HE THONG =====
+		System.out.println("==================== TEST TOM TAT HE THONG ====================");
+		System.out.println(metro.getSystemSummary());
+		metro.updateOperatingHours("5:30 - 22:30");
+
+		// ===== TEST ADD & REMOVE FREE RIDE DAYS =====
+		System.out.println("==================== TEST NGAY LE MIEN PHI ====================");
+		Calendar tet1 = Calendar.getInstance();
+		tet1.set(2026, Calendar.JANUARY, 29);
+		Calendar quocKhanh = Calendar.getInstance();
+		quocKhanh.set(2026, Calendar.SEPTEMBER, 2);
+
+		metro.addFreeRideDay(tet1, "Tet Nguyen Dan");
+		metro.addFreeRideDay(quocKhanh, "Quoc Khanh");
+
+		System.out.println("Tong so ngay le: " + metro.getFreeRideDays().size());
+		System.out.println("Tet co phai ngay le? " + metro.isFreeRideDay(tet1));
+		System.out.println("Ten ngay le Tet: " + metro.getHolidayName(tet1));
+
+		metro.removeFreeRideDay(tet1);
+		System.out.println("So ngay le sau khi xoa Tet: " + metro.getFreeRideDays().size());
+		System.out.println();
+
+		// ===== TEST GET ALL & UPCOMING HOLIDAYS =====
+		System.out.println("==================== TEST LAY DANH SACH NGAY LE ====================");
+		List<Calendar> allHolidays = metro.getAllFreeRideDays();
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		for (Calendar holiday : allHolidays) {
+			System.out.println("Ngay le: " + sdf.format(holiday.getTime()) + " - " + metro.getHolidayName(holiday));
+		}
+
+		List<Calendar> upcoming = metro.getUpcomingHolidays(5);
+		System.out.println("So ngay le sap toi: " + upcoming.size());
+		System.out.println();
+
+		// ===== TEST CALCULATE TICKET PRICE =====
+		System.out.println("==================== TEST TINH GIA VE ====================");
+		double giaThuong1 = metro.calculateTicketPrice(ve01, Calendar.getInstance());
+		double giaLe = metro.calculateTicketPrice(ve01, quocKhanh);
+		System.out.println("Gia ve ngay thuong: " + giaThuong1);
+		System.out.println("Gia ve ngay le (Quoc Khanh): " + giaLe);
+		System.out.println();
+
+		// ===== TEST TO STRING =====
+		System.out.println("==================== TEST TO STRING ====================");
+		System.out.println(metro.toString());
 	}
+
 }
